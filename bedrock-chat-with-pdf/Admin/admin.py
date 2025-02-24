@@ -6,6 +6,7 @@ import uuid
 ## s3_client
 s3_client = boto3.client("s3")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
+REGION = os.getenv("REGION")
 
 ## Bedrock
 #from langchain_community.embeddings import BedrockEmbeddings
@@ -19,7 +20,7 @@ from langchain_community.document_loaders import PyPDFLoader
 ## import FAISS
 from langchain_community.vectorstores import FAISS
 
-bedrock_client = boto3.client(service_name="bedrock-runtime", region_name="eu-west-2")
+bedrock_client = boto3.client(service_name="bedrock-runtime", region_name=REGION)
 bedrock_embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v2:0", client=bedrock_client)
 
 def get_unique_id():
