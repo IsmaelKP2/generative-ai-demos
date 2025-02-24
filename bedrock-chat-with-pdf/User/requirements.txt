@@ -1,4 +1,6 @@
 streamlit
 langchain
+langchain_community
+langchain-aws
 faiss-cpu
 boto3

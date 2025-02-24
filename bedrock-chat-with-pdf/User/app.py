@@ -6,11 +6,13 @@ import uuid
 ## s3_client
 s3_client = boto3.client("s3")
 BUCKET_NAME = os.getenv("BUCKET_NAME")
+REGION = os.getenv("REGION")
 
 ## Bedrock
-from langchain_community.embeddings import BedrockEmbeddings
-from langchain.llms.bedrock import Bedrock
-
+#from langchain_community.embeddings import BedrockEmbeddings
+from langchain_aws import BedrockEmbeddings
+#from langchain.llms.bedrock import Bedrock
+from langchain_aws import ChatBedrock
 ## prompt and chain
 from langchain.prompts import PromptTemplate
 from langchain.chains import RetrievalQA
@@ -24,8 +26,9 @@ from langchain_community.document_loaders import PyPDFLoader
 ## import FAISS
 from langchain_community.vectorstores import FAISS
 
-bedrock_client = boto3.client(service_name="bedrock-runtime")
-bedrock_embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v1", client=bedrock_client)
+
+bedrock_client = boto3.client(service_name="bedrock-runtime", region_name=REGION)
+bedrock_embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v2:0", client=bedrock_client)
 
 folder_path="/tmp/"
 
@@ -38,8 +41,14 @@ def load_index():
     s3_client.download_file(Bucket=BUCKET_NAME, Key="my_faiss.pkl", Filename=f"{folder_path}my_faiss.pkl")
 
 def get_llm():
-    llm=Bedrock(model_id="anthropic.claude-v2:1", client=bedrock_client,
-                model_kwargs={'max_tokens_to_sample': 512})
+    llm = ChatBedrock(
+    client=bedrock_client,
+    model_id="anthropic.claude-3-haiku-20240307-v1:0",
+    )
+#     llm = BedrockChat(
+#     client=bedrock_client,
+#     model_id="anthropic.claude-3-haiku-20240307-v1:0",
+# )
     return llm
 
 # get_response()
@@ -70,7 +79,8 @@ def get_response(llm,vectorstore, question ):
     return_source_documents=True,
     chain_type_kwargs={"prompt": PROMPT}
 )
-    answer=qa({"query":question})
+    #answer=qa({"query":question})
+    answer = qa.invoke({"query": question})
     return answer['result']
 
 
